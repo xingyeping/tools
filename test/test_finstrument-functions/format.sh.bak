@@ -1,0 +1,30 @@
+#!/bin/sh
+
+if [ $# != 3 ]; then
+	echo 'Usage: format.sh executefile addressfile functionfile'
+	exit
+fi;
+
+indent=""
+indent_inter="    "
+cat $2 | while read line
+do
+	if [ "$line" = 'Enter' ]; then
+		read line1
+		read line2
+		indent="${indent}${indent_inter}"
+		addr2line -e $1 -f $line1 -s >> $3
+		echo "--->" >> $3
+		str="       "
+		addr2line -e $1 -f $line2 -s | sed 's/^/'"$indent_inter"'/' >> $3
+		echo >> $3
+	elif [ "$line" = 'Exit' ]; then
+		read line1
+		read line2
+		addr2line -e $1 -f $line2 -s | sed 's/^/    /' >> $3
+		echo "<---" >> $3
+		addr2line -e $1 -f $line1 -s >> $3
+		echo >> $3
+	fi;
+done
+
